@@ -1,0 +1,41 @@
+(defun emptyMe (x) 
+  (cond (T)
+  )
+)
+
+(defun ne (x y) 
+  (not (eq x y))
+)
+
+(defun logIt (&rest lst) 
+  (emptyMe (print lst))
+)
+
+(defun fatalError (&rest lst)
+  (logIt (append 'FATAL 'ERROR lst))
+)
+
+(defun refalVariable (lst)
+  (cond ((ne (length lst) 2) nil)
+        ((and (ne (car lst) 'e)
+              (ne (car lst) 's)
+              (ne (car lst) 'w)
+              (ne (car lst) 'v)
+         )
+            nil
+        )
+        (t)
+  )
+)
+
+(defun Match (tmp lst)
+  (cond ((and (null tmp) (null lst)) t)
+        ((or (null tmp) (null lst)) nil)
+        ((and (atom (car tmp)) (ne (car tmp) (car lst))) nil)
+        ((and (atom (car tmp)) 
+              (eq (car tmp) (car lst))) 
+                (Match (cdr tmp) (cdr lst)))
+        ((fatalError 'matchFunction))
+  )
+)
+
