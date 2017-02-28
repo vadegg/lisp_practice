@@ -1,18 +1,23 @@
-(defun emptyMe (x) 
-  (cond (T)
-  )
-)
-
 (defun ne (x y) 
   (not (eq x y))
 )
 
+(defun recursiveConcat (lst)
+  (cond ((null lst) "")
+	((concatenate 'string (car lst) " " (recursiveConcat (cdr lst))))
+  )
+)
+
 (defun logIt (&rest lst) 
-  (emptyMe (print lst))
+  (and (print (recursiveConcat (cons "LOG: " lst))) T)
+)
+
+(defun logAndReturn (&rest lst)
+  (and (logIt (cdr lst)) (car lst))
 )
 
 (defun fatalError (&rest lst)
-  (logIt (append 'FATAL 'ERROR lst))
+  (logIt 'FATAL 'ERROR lst)
 )
 
 (defun refalVariable (lst)
@@ -29,12 +34,28 @@
 )
 
 (defun Match (tmp lst)
-  (cond ((and (null tmp) (null lst)) t)
+  (cond 
+    	;Template and list are empty. End of parsing
+    	((and (null tmp) (null lst)) (logAndReturn T 'Null 'Lists))
+
+	;Either template or list are empty. Mathing fails
         ((or (null tmp) (null lst)) nil)
+
+	;First template's element is atom and it is not equal to first list's element
         ((and (atom (car tmp)) (ne (car tmp) (car lst))) nil)
-        ((and (atom (car tmp)) 
+
+        ;Equal elements. Recursive continue
+	((and (atom (car tmp)) 
               (eq (car tmp) (car lst))) 
                 (Match (cdr tmp) (cdr lst)))
+
+	;Refal variable in template
+	((refalVariable (car tmp)) (logIt 'RefalVar))
+
+	;First template's and list's first elements are lists. Recursive continue
+	((and (Match (car tmp) (car lst)) (Match (cdr tmp) (cdr lst))))
+
+	;Fatal error if no cond rule matched
         ((fatalError 'matchFunction))
   )
 )
