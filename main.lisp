@@ -31,14 +31,13 @@
 )
 
 (defun sMatchRefalTemplate (refalVar tmp lst) 
-  (let ((refalVarValue (get (car refalVar) (cdr refalVar))))
-      (cond 
+  (let ((refalVarValue (get (car refalVar) (cadr refalVar))))
+      (cond
         ;if refalVar exists then return:
         ;* null if it's value is not equal to first list's element 
         ;* recursive Match calling else
-        (refalVarValue (cond ((eq refalVariable (car refalVar))
-                                (Match tmp (cdr lst))
-                             )
+        ((and (eq refalVarValue (car lst))
+                            (Match tmp (cdr lst))
                        )
         )
         ((not (atom (car lst))) nil)
@@ -76,7 +75,7 @@
   )
 )
 (defun Match (tmp lst)
-  (cond 
+  (cond
         ;Template and list are empty. End of parsing
         ((and (null tmp) (null lst)) T)
 
