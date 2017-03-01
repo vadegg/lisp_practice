@@ -30,25 +30,36 @@
   )
 )
 
-(defun sMatchRefalTemplate (tmp lst) 
-  (logIt "sMatchRefalTemplate")
+(defun sMatchRefalTemplate (refalVar tmp lst) 
+  (let ((refalVarValue (get (car refalVar) (cdr refalVar))))
+      (cond 
+        ;if refalVar exists then return:
+        ;* null if it's value is not equal to first list's element 
+        ;* recursive Match calling else
+        (refalVarValue (cond ((eq refalVariable (car refalVar))
+                                (Match tmp (cdr lst))
+                             )
+                       )
+        )
+        ((not (atom (car lst))) nil)
+        ((and (put (car refalVar) (cadr refalVar) (car lst)) 
+              (Match tmp (cdr lst))
+        ))
+      )
+  )
 )
 
-
-(defun eMatchRefalTemplate (tmp lst) 
+(defun eMatchRefalTemplate (refalVar tmp lst) 
   (logIt "eMatchRefalTemplate")
 )
 
-(defun vMatchRefalTemplate (tmp lst) 
+(defun vMatchRefalTemplate (refalVar tmp lst) 
   (logIt "vMatchRefalTemplate")
 )
 
-
-(defun wMatchRefalTemplate (tmp lst) 
+(defun wMatchRefalTemplate (refalVar tmp lst) 
   (logIt "wMatchRefalTemplate")
 )
-
-
 
 (defun matchRefalTemplate (tmp lst) 
   (cond
@@ -57,10 +68,10 @@
          (fatalError "matchRefalTemplate")
     )
 
-    ((eq (car (car tmp)) 's) (sMatchRefalTemplate tmp lst))
-    ((eq (car (car tmp)) 'e) (eMatchRefalTemplate tmp lst))
-    ((eq (car (car tmp)) 'v) (vMatchRefalTemplate tmp lst))
-    ((eq (car (car tmp)) 'w) (wMatchRefalTemplate tmp lst))
+    ((eq (car (car tmp)) 's) (sMatchRefalTemplate (car tmp) (cdr tmp) lst))
+    ((eq (car (car tmp)) 'e) (eMatchRefalTemplate (car tmp) (cdr tmp) lst))
+    ((eq (car (car tmp)) 'v) (vMatchRefalTemplate (car tmp) (cdr tmp) lst))
+    ((eq (car (car tmp)) 'w) (wMatchRefalTemplate (car tmp) (cdr tmp) lst))
     ((fatalError "matchRefalTemplate"))
   )
 )
