@@ -1,3 +1,7 @@
+(defun put (a name p)
+  (setf (get a name) p)
+)
+
 (defun ne (x y) 
   (not (eq x y))
 )
@@ -33,6 +37,19 @@
   )
 )
 
+(defun matchRefalTemplate (tmp lst) 
+  (cond
+    ;Error program structure checking
+    ((or (null tmp) (null lst) (atom (car tmp)) (ne (length (car tmp)) 2))
+     	(fatalError "matchRefalTemplate")
+    )
+
+    ((eq (car (car tmp)) 's) (sMatchRefalTemplate tmp lst))
+    ((eq (car (car tmp)) 'e) (eMatchRefalTemplate tmp lst))
+    ((eq (car (car tmp)) 'v) (vMatchRefalTemplate tmp lst))
+    ((eq (car (car tmp)) 'w) (wMatchRefalTemplate tmp lst))
+  )
+)
 (defun Match (tmp lst)
   (cond 
     	;Template and list are empty. End of parsing
