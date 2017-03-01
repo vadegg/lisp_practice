@@ -2,6 +2,23 @@
   (setf (get a name) p)
 )
 
+(defun cleanSymbol (sym) 
+  (let ((symbolsList (SYMBOL-PLIST 's)))
+    (cond ((null symbolsList))
+          ((remprop sym (car symbolsList)) (cleanSymbol sym))
+          ((fatalError "cleanSymbol"))
+    )
+  )
+)
+
+(defun cleanAllSymbols ()
+  (and (cleanSymbol 's) 
+       (cleanSymbol 'v) 
+       (cleanSymbol 'w) 
+       (cleanSymbol 'e)
+  )
+)
+
 (defun ne (x y) 
   (not (eq x y))
 )
@@ -33,16 +50,21 @@
 (defun sMatchRefalTemplate (refalVar tmp lst) 
   (let ((refalVarValue (get (car refalVar) (cadr refalVar))))
       (cond
-        ;if refalVar exists then return:
-        ;* null if it's value is not equal to first list's element 
-        ;* recursive Match calling else
-        ((and (eq refalVarValue (car lst))
-                            (Match tmp (cdr lst))
+        ((not (atom (car lst))) nil)
+
+        ;if refalVarValue exists then:
+        ;* continue matching with lst's tail 
+        ;   if previous s's value equals to lst's first element
+        ;* return nil else
+        (refalVarValue (cond ((ne refalVarValue (car lst)) nil)
+                             ((Match_ tmp (cdr lst)))
                        )
         )
-        ((not (atom (car lst))) nil)
+
+        ;refalVarValue doesn't exist here and lst's first element is atom, 
+        ;   remember it's value and continue
         ((and (put (car refalVar) (cadr refalVar) (car lst)) 
-              (Match tmp (cdr lst))
+              (Match_ tmp (cdr lst))
         ))
       )
   )
@@ -74,35 +96,44 @@
     ((fatalError "matchRefalTemplate"))
   )
 )
+
 (defun Match (tmp lst)
+  (cond 
+    ((not (cleanAllSymbols)))
+    ((let ((result (Match_ tmp lst)))
+       (cond ((cleanAllSymbols) result))
+    ))
+  )
+)
+
+(defun Match_ (tmp lst)
   (cond
-        ;Template and list are empty. End of parsing
-        ((and (null tmp) (null lst)) T)
 
-        ;Either template or list are empty. Mathing fails
-        ((or (null tmp) (null lst)) nil)
+    ;Template and list are empty. End of parsing
+    ((and (null tmp) (null lst)) T)
 
-        ;First template's element is atom and it
-        ;is not equal to first list's element
-        ((and (atom (car tmp)) (ne (car tmp) (car lst))) nil)
+    ;Either template or list are empty. Mathing fails
+    ((or (null tmp) (null lst)) nil)
 
-        ;Equal elements. Recursive continue
-        ((and (atom (car tmp)) 
-              (eq (car tmp) (car lst))) 
-                (Match (cdr tmp) (cdr lst)))
+    ;First template's element is atom and it
+    ;is not equal to first list's element
+    ((and (atom (car tmp)) (ne (car tmp) (car lst))) nil)
 
-        ;Refal variable in template
-        ((refalVariable (car tmp)) (matchRefalTemplate tmp lst))
+    ;Equal elements. Recursive continue
+    ((and (atom (car tmp)) 
+          (eq (car tmp) (car lst))
+     ) 
+        (Match_ (cdr tmp) (cdr lst)))
 
-        ;First tmp's element is list
-        ((and (not (atom (car tmp))) (atom (car lst))) nil)
+    ;Refal variable in template
+    ((refalVariable (car tmp)) (matchRefalTemplate tmp lst))
+
+    ;First tmp's element is list
+    ((and (not (atom (car tmp))) (atom (car lst))) nil)
         
-        ;First template's and list's first elements are lists.
-        ;Recursive continue
-        ((and (Match (car tmp) (car lst)) (Match (cdr tmp) (cdr lst))))
-
-        ;Fatal error if no cond rule matched
-        ((fatalError "matchFunction"))
+    ;First template's and list's first elements are lists.
+    ;Recursive continue
+    ((and (Match_ (car tmp) (car lst)) (Match_ (cdr tmp) (cdr lst))))
   )
 )
 
