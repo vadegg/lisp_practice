@@ -45,11 +45,19 @@
   (not (eq x y))
 )
 
-(defun logIt (stringToLog) 
+(defun logIt (&rest lst)
+  (logIt_ (concatAll_ lst))
+)
+
+(defun logAndReturn (&rest lst)
+  (logAndReturn_ (car lst) (concatAll_ (cdr lst)))
+)
+
+(defun logIt_ (stringToLog) 
   (and (print (concatenate 'string "LOG: " stringToLog)) T)
 )
 
-(defun logAndReturn (returnValue stringToLog)
+(defun logAndReturn_ (returnValue stringToLog)
   (and (logIt stringToLog) returnValue)
 )
 
