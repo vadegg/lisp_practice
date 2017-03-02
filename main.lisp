@@ -2,6 +2,11 @@
   (setf (get a name) p)
 )
 
+(defun toString (item)
+  (string-trim "\"" (write-to-string item)) 
+)
+
+
 (defun smartEq (lst1 lst2)
   (cond
     ((and (null lst1) (null lst2)) t)
@@ -11,11 +16,15 @@
   )
 )
 
+(defun smartNe (lst1 lst2)
+  (not (smartEq lst1 lst2))
+)
+
 (defun concatAll_ (lst) 
-  (cond 
+  (cond
     ((null lst) "")
     ((atom (car lst)) 
-        (concatenate 'string (string (car lst)) " " (concatAll_ (cdr lst))))
+        (concatenate 'string (toString (car lst)) " " (concatAll_ (cdr lst))))
     ((concatenate 'string "(" (concatAll_ (car lst)) ") " (concatAll_ (cdr lst))))
   )
 )
@@ -25,7 +34,7 @@
 )
 
 (defun cleanSymbol (sym) 
-  (let ((symbolsList (SYMBOL-PLIST 's)))
+  (let ((symbolsList (SYMBOL-PLIST sym)))
     (cond ((null symbolsList))
           ((remprop sym (car symbolsList)) (cleanSymbol sym))
           ((fatalError "cleanSymbol"))
@@ -63,6 +72,29 @@
 
 (defun fatalError (stringToLog)
   (and (print (concatenate 'string "FATAL: " stringToLog)) T)
+)
+
+(defun printResult () 
+  (and (print "RESULT:") 
+       (printResult_ 's (SYMBOL-PLIST 's))
+       (printResult_ 'w (SYMBOL-PLIST 'w))
+       (printResult_ 'v (SYMBOL-PLIST 'v))
+       (printResult_ 'e (SYMBOL-PLIST 'e))
+  )
+)
+
+(defun printResult_ (varType lst)
+  (cond ((null lst))
+        ((and (print (concatAll
+                        varType
+                        (car lst)
+                        " => "
+                        (cadr lst)
+                      )
+               )
+               (printResult_ varType (cddr lst))
+        ))
+  )
 )
 
 (defun refalVariable (lst)
@@ -109,7 +141,24 @@
 )
 
 (defun wMatchRefalTemplate (refalVar tmp lst) 
-  (logIt "wMatchRefalTemplate")
+  (let ((refalVarValue (get (car refalVar) (cadr refalVar))))
+      (cond
+        ;if refalVarValue exists then:
+        ;* continue matching with lst's tail 
+        ;   if previous s's value equals to lst's first element
+        ;* return nil else
+        (refalVarValue (cond ((smartNe refalVarValue (car lst)) nil)
+                             ((Match_ tmp (cdr lst)))
+                       )
+        )
+
+        ;refalVarValue doesn't exist here
+        ;   remember it's value and continue
+        ((and (put (car refalVar) (cadr refalVar) (car lst)) 
+              (Match_ tmp (cdr lst))
+        ))
+      )
+  )
 )
 
 (defun matchRefalTemplate (tmp lst) 
@@ -131,7 +180,9 @@
   (cond 
     ((not (cleanAllSymbols)))
     ((let ((result (Match_ tmp lst)))
-       (cond ((cleanAllSymbols) result))
+       (cond ((and (printResult) (cleanAllSymbols)) result)
+             ((fatalError "Match"))
+       )
     ))
   )
 )
