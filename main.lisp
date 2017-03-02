@@ -2,6 +2,28 @@
   (setf (get a name) p)
 )
 
+(defun smartEq (lst1 lst2)
+  (cond
+    ((and (null lst1) (null lst2)) t)
+    ((or (null lst1) (null lst2)) nil)
+    ((atom lst1) (eq lst1 lst2))
+    ((and (smartEq (car lst1) (car lst2)) (smartEq (cdr lst1) (cdr lst2))))
+  )
+)
+
+(defun concatAll_ (lst) 
+  (cond 
+    ((null lst) "")
+    ((atom (car lst)) 
+        (concatenate 'string (string (car lst)) " " (concatAll_ (cdr lst))))
+    ((concatenate 'string "(" (concatAll_ (car lst)) ") " (concatAll_ (cdr lst))))
+  )
+)
+
+(defun concatAll (&rest lst)
+  (concatAll_ lst)
+)
+
 (defun cleanSymbol (sym) 
   (let ((symbolsList (SYMBOL-PLIST 's)))
     (cond ((null symbolsList))
