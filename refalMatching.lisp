@@ -66,7 +66,6 @@
 (defun elementNumberPrediction (n refalVar tmp lst)
   (let ((firstNElems (takeFirtNElements n lst)))
     (cond 
-      ((and (logIt "elementNumberPrediction")nil))
       ((not (= (smartLen firstNElems) n)) (logAndReturn nil "lengths are not equal"))
       ((or (putRefalVar refalVar firstNElems) t) 
          (cond 
@@ -81,8 +80,7 @@
 (defun eMatchRefalTemplate (refalVar tmp lst) 
   (let ((refalVarValue (get (car refalVar) (cadr refalVar))))
     (cond 
-      ((and (printResult) nil))
-      ((print refalVarValue) (let ((listLen (smartLen refalVarValue)) (firstListLenElems (takeFirtNElements (smartLen refalVarValue) lst)))
+      (refalVarValue (let ((listLen (smartLen refalVarValue)) (firstListLenElems (takeFirtNElements (smartLen refalVarValue) lst)))
                        (cond
                          ((not (= listLen (smartLen firstListLenElems))) nil)
                          ((smartEq refalVarValue firstListLenElems) (Match_ tmp takeLstTail))
