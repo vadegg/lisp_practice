@@ -14,6 +14,10 @@
   (and (logIt stringToLog) returnValue)
 )
 
+(defun logItCond (&rest lst)
+  (logAndReturn_ nil lst)
+)
+
 (defun fatalError (stringToLog)
   (and (print (concatenate 'string "FATAL: " stringToLog)) T)
 )

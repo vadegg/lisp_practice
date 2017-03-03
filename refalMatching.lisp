@@ -1,6 +1,8 @@
+(load "helpers.lisp")
+
 (defun refalVariable (lst)
   (cond ((atom lst) nil)
-        ((ne (length lst) 2) nil)
+        ((ne (smartLen lst) 2) nil)
         ((or  (eq (car lst) 'e)
               (eq (car lst) 's)
               (eq (car lst) 'w)
@@ -33,8 +35,63 @@
   )
 )
 
+(defun takeFirtNElements (n lst)
+  (cond 
+    ((null lst) nil)
+    ((= n 0) nil)
+    ((cons (car lst) (takeFirtNElements (- n 1) (cdr lst))))
+  )
+)
+
+(defun takeLstTail (n lst)
+  (cond 
+    ((null lst) nil)
+    ((= n 0) lst)
+    ((takeLstTail (- n 1) (cdr lst)))
+  )
+)
+
+(defun putRefalVar (refalVar value)
+  (cond ((null value) (put (car refalVar) (cadr refalVar) '\nil))
+        ((put (car refalVar) (cadr refalVar) value))
+  )
+)
+
+(defun smartLen (lst)
+  (cond ((eq lst '\nil) 0)
+        ((length lst))
+  )
+)
+
+(defun elementNumberPrediction (n refalVar tmp lst)
+  (let ((firstNElems (takeFirtNElements n lst)))
+    (cond 
+      ((and (logIt "elementNumberPrediction")nil))
+      ((not (= (smartLen firstNElems) n)) (logAndReturn nil "lengths are not equal"))
+      ((or (putRefalVar refalVar firstNElems) t) 
+         (cond 
+           ((Match_ tmp (takeLstTail n lst)))
+           ((elementNumberPrediction (+ n 1) refalVar tmp lst))
+          )
+      )
+    )
+  )
+)
+
 (defun eMatchRefalTemplate (refalVar tmp lst) 
-  (logIt "eMatchRefalTemplate")
+  (let ((refalVarValue (get (car refalVar) (cadr refalVar))))
+    (cond 
+      ((and (printResult) nil))
+      ((print refalVarValue) (let ((listLen (smartLen refalVarValue)) (firstListLenElems (takeFirtNElements (smartLen refalVarValue) lst)))
+                       (cond
+                         ((not (= listLen (smartLen firstListLenElems))) nil)
+                         ((smartEq refalVarValue firstListLenElems) (Match_ tmp takeLstTail))
+                       )
+                     )
+      )
+      ((elementNumberPrediction 0 refalVar tmp lst))
+    )
+  )
 )
 
 (defun vMatchRefalTemplate (refalVar tmp lst) 
@@ -65,7 +122,7 @@
 (defun matchRefalTemplate (tmp lst) 
   (cond
     ;Error program structure checking
-    ((or (null tmp) (null lst) (atom (car tmp)) (ne (length (car tmp)) 2))
+    ((or (null tmp) (null lst) (atom (car tmp)) (ne (smartLen (car tmp)) 2))
          (fatalError "matchRefalTemplate")
     )
 
