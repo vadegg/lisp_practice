@@ -11,11 +11,11 @@
 )
 
 (defun logAndReturn_ (returnValue stringToLog)
-  (and (logIt stringToLog) returnValue)
+  (and (logIt (concatAll stringToLog)) returnValue)
 )
 
 (defun logItCond (&rest lst)
-  (logAndReturn_ nil lst)
+  (logAndReturn_ nil (concatAll_ lst))
 )
 
 (defun fatalError (stringToLog)

@@ -9,6 +9,9 @@
 
 (defun smartEq (lst1 lst2)
   (cond
+    ((or (and (eq lst1 '\nil) (null lst2)) 
+         (and (eq lst2 '\nil) (null lst1)))
+    )
     ((and (null lst1) (null lst2)) t)
     ((or (null lst1) (null lst2)) nil)
     ((atom lst1) (eq lst1 lst2))

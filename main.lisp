@@ -15,12 +15,12 @@
 
 (defun Match_ (tmp lst)
   (cond
-
+((and (printResult) (logItCond "MatchFunc:" tmp "with:" lst)))
     ;Template and list are empty. End of parsing
     ((and (null tmp) (null lst)) T)
 
     ;Either template or list are empty. Mathing fails
-    ((or (null tmp) (null lst)) nil)
+    ((null tmp) nil)
 
     ;First template's element is atom and it
     ;is not equal to first list's element

@@ -15,6 +15,7 @@
 (defun sMatchRefalTemplate (refalVar tmp lst) 
   (let ((refalVarValue (get (car refalVar) (cadr refalVar))))
       (cond
+        ((logItCond "aaaa"))
         ((not (atom (car lst))) nil)
 
         ;if refalVarValue exists then:
@@ -66,9 +67,10 @@
 (defun elementNumberPrediction (n refalVar tmp lst)
   (let ((firstNElems (takeFirtNElements n lst)))
     (cond 
-      ((not (= (smartLen firstNElems) n)) (logAndReturn nil "lengths are not equal"))
+      
+      ((not (= (smartLen firstNElems) n)) (and (remprop (car refalVar) (cadr refalVar)) nil))
       ((or (putRefalVar refalVar firstNElems) t) 
-         (cond 
+         (cond
            ((Match_ tmp (takeLstTail n lst)))
            ((elementNumberPrediction (+ n 1) refalVar tmp lst))
           )
@@ -83,7 +85,7 @@
       (refalVarValue (let ((listLen (smartLen refalVarValue)) (firstListLenElems (takeFirtNElements (smartLen refalVarValue) lst)))
                        (cond
                          ((not (= listLen (smartLen firstListLenElems))) nil)
-                         ((smartEq refalVarValue firstListLenElems) (Match_ tmp takeLstTail))
+                         ((smartEq refalVarValue firstListLenElems) (Match_ tmp (takeLstTail (smartLen firstListLenElems) lst)))
                        )
                      )
       )
@@ -120,9 +122,7 @@
 (defun matchRefalTemplate (tmp lst) 
   (cond
     ;Error program structure checking
-    ((or (null tmp) (null lst) (atom (car tmp)) (ne (smartLen (car tmp)) 2))
-         (fatalError "matchRefalTemplate")
-    )
+    ((or (null tmp) (null lst) (atom (car tmp)) (ne (smartLen (car tmp)) 2)))
 
     ((eq (car (car tmp)) 's) (sMatchRefalTemplate (car tmp) (cdr tmp) lst))
     ((eq (car (car tmp)) 'e) (eMatchRefalTemplate (car tmp) (cdr tmp) lst))
