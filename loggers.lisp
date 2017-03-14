@@ -7,7 +7,7 @@
 )
 
 (defun logIt_ (stringToLog) 
-  (and (print (concatenate 'string "LOG: " stringToLog)) T)
+  (or (and (get 'SYSTEM 'LOG) (print (concatenate 'string "LOG: " stringToLog))) T)
 )
 
 (defun logAndReturn_ (returnValue stringToLog)

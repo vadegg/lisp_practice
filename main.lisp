@@ -2,11 +2,16 @@
 (load "helpers.lisp")
 (load "loggers.lisp")
 
+(put 'SYSTEM 'LOG nil)
+
 (defun Match (tmp lst)
   (cond 
     ((not (cleanAllSymbols)))
     ((let ((result (Match_ tmp lst)))
-       (cond ((and (printResult) (cleanAllSymbols)) result)
+       (cond ((and (print "============") 
+                   (printResult) 
+                   (cleanAllSymbols)
+              ) result)
              ((fatalError "Match"))
        )
     ))
@@ -15,7 +20,7 @@
 
 (defun Match_ (tmp lst)
   (cond
-((and (printResult) (logItCond "MatchFunc:" tmp "with:" lst)))
+((and (get 'SYSTEM 'LOG) (printResult) (logItCond "MatchFunc:" tmp "with:" lst)))
     ;Template and list are empty. End of parsing
     ((and (null tmp) (null lst)) T)
 
