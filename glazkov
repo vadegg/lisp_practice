@@ -1,4 +1,185 @@
-(load "helpers.lisp")
+
+;определение функции для работы с копилкой
+(defun put (a name p)
+  (setf (get a name) p)
+)
+
+;функция для перевода любой структуры данных в строку
+(defun toString (item)
+  (string-trim "\"" (write-to-string item)) 
+)
+
+;функция для рекурсивного сравнения списков на равенство
+(defun smartEq (lst1 lst2)
+  (cond
+    ((or (and (eq lst1 '\nil) (null lst2)) 
+         (and (eq lst2 '\nil) (null lst1)))
+    )
+    ((and (null lst1) (null lst2)) t)
+    ((or (null lst1) (null lst2)) nil)
+    ((atom lst1) (eq lst1 lst2))
+    ((and (smartEq (car lst1) (car lst2)) (smartEq (cdr lst1) (cdr lst2))))
+  )
+)
+
+;функция для рекурсивного сравнения списков на неравенство
+(defun smartNe (lst1 lst2)
+  (not (smartEq lst1 lst2))
+)
+
+;функция превращает свой список-аргумент в строку, являющуюся
+;конкатенацией строковых представлений своих атомов
+(defun concatAll_ (lst) 
+  (cond
+    ((null lst) "")
+    ((atom (car lst)) 
+        (concatenate 'string (toString (car lst)) " " (concatAll_ (cdr lst))))
+    ((concatenate 'string "(" (concatAll_ (car lst)) ") " (concatAll_ (cdr lst))))
+  )
+)
+
+;превращает все свои аргументы в строки и конкатерирует их в одну
+(defun concatAll (&rest lst)
+  (concatAll_ lst)
+)
+
+;по заданному атому очищает все свойства атомов в копилке
+(defun cleanSymbol (sym) 
+  (let ((symbolsList (SYMBOL-PLIST sym)))
+    (cond ((null symbolsList))
+          ((remprop sym (car symbolsList)) (cleanSymbol sym))
+          ((fatalError "cleanSymbol"))
+    )
+  )
+)
+
+;функция очищает копилку
+(defun cleanAllSymbols ()
+  (and (cleanSymbol 's) 
+       (cleanSymbol 'v) 
+       (cleanSymbol 'w) 
+       (cleanSymbol 'e)
+  )
+)
+
+;отрицание равенства - функция определена для большей читабельности кода
+(defun ne (x y) 
+  (not (eq x y))
+)
+
+
+;преобразует в строки, конкатенирует и выводит на экран все свои аргументы
+(defun logIt (&rest lst)
+  (logIt_ (concatAll_ lst))
+)
+
+;аналогично logIt, только возвращает свой первый аргумент
+(defun logAndReturn (&rest lst)
+  (logAndReturn_ (car lst) (concatAll_ (cdr lst)))
+)
+
+;выводит на экран строку в зависимости от режима логирования 'SYSTEM-'LOG
+(defun logIt_ (stringToLog) 
+  (or (and (get 'SYSTEM 'LOG) (print (concatenate 'string "LOG: " stringToLog))) T)
+)
+
+;аналогично logIt_, только возвращает свой первый аргумент
+(defun logAndReturn_ (returnValue stringToLog)
+  (and (logIt (concatAll stringToLog)) returnValue)
+)
+
+;аналогично logIt, только возвращает nil вне зависимости от аргументов
+;используется для отладки в ветках cond. не влияет на ход вычислений
+(defun logItCond (&rest lst)
+  (logAndReturn_ nil (concatAll_ lst))
+)
+
+;функция для вывода на экран сообщений о фатальной ошибке - 
+;случаях, когда программа, вероятно, работает не так, как задумывал разработчик
+(defun fatalError (stringToLog)
+  (and (print (concatenate 'string "FATAL: " stringToLog)) T)
+)
+
+;функция выводит на экран содержимое копилки - значение рефаловских переменных
+(defun printResult () 
+  (and (print "RESULT:") 
+       (printResult_ 's (SYMBOL-PLIST 's))
+       (printResult_ 'w (SYMBOL-PLIST 'w))
+       (printResult_ 'v (SYMBOL-PLIST 'v))
+       (printResult_ 'e (SYMBOL-PLIST 'e))
+  )
+)
+
+;функция выводит на экран значения списка свойств одного атома копилки
+(defun printResult_ (varType lst)
+  (cond ((null lst))
+        ((and (print (concatAll
+                        varType
+                        (car lst)
+                        " => "
+                        (cadr lst)
+                      )
+               )
+               (printResult_ varType (cddr lst))
+        ))
+  )
+)
+
+;установка режима - 
+;t для вывода на экран всей отладочной информации
+;nil для режима "релиза"
+(put 'SYSTEM 'LOG nil)
+
+;главная функция
+;чистит копилку для корректной работы
+;затем вызывает функцию непосредственной обработки ввода
+;и снова чистит копилку
+(defun Match (tmp lst)
+  (cond 
+    ((not (cleanAllSymbols)))
+    ((let ((result (Match_ tmp lst)))
+       (cond ((and (print "============") 
+                   (printResult) 
+                   (cleanAllSymbols)
+              ) result)
+             ((fatalError "Match"))
+       )
+    ))
+  )
+)
+
+;функция обработки шаблона и списка
+(defun Match_ (tmp lst)
+  (cond
+    ;логирует состояние копилки при каждом вызове функции
+    ((and (get 'SYSTEM 'LOG) (printResult) (logItCond "MatchFunc:" tmp "with:" lst)))
+
+    ;сопоставление прошло успешно, если на входе имеем два пустых списка
+    ((and (null tmp) (null lst)) T)
+
+    ;сопоставление прошло не успешно, если список с шаблоном пуст, а список для сопоставления не пуст
+    ;ситуация, когда шаблон не пуст, а список пуст возможна, например, '((e 1)) 'nil - должно сопоставиться
+    ((null tmp) nil)
+
+    ;если первый элемент шаблона - атом, просто сравниваем его с первым элементом списка
+    ((and (atom (car tmp)) (ne (car tmp) (car lst))) nil)
+
+    ((and (atom (car tmp)) 
+          (eq (car tmp) (car lst))
+     ) 
+        (Match_ (cdr tmp) (cdr lst)))
+
+    ;если первый элемент шаблона - рефаловская переменная, отправляемся в функцию обработки рефал-переменных
+    ((refalVariable (car tmp)) (matchRefalTemplate tmp lst))
+
+    ;отслеживаем ситуацию, когда первый элемент шаблона список(не рефал-переменная), а первый элемент списка - атом
+    ((and (not (atom (car tmp))) (atom (car lst))) nil)
+        
+    ;оба первых элемента шаблона и списка являются списками - рекурсивно обрабатываем
+    ((and (Match_ (car tmp) (car lst)) (Match_ (cdr tmp) (cdr lst))))
+  )
+)
+
 ;функция-предикат, является ли аргумент рефал-переменной
 ;является, если список состоит из двух элементов, 
 ;   первый из которых - одна из букв e, s, w или v
