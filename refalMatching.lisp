@@ -15,8 +15,8 @@
 (defun sMatchRefalTemplate (refalVar tmp lst) 
   (let ((refalVarValue (get (car refalVar) (cadr refalVar))))
       (cond
-        ((logItCond "aaaa"))
-        ((not (atom (car lst))) nil)
+        ((logItCond "smatch refalVar:" refalVar "tmp:" tmp "lst:" lst))
+        ((or (null lst) (not (atom (car lst)))) nil)
 
         ;if refalVarValue exists then:
         ;* continue matching with lst's tail 
