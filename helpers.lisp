@@ -1,12 +1,15 @@
+
+;определение функции для работы с копилкой
 (defun put (a name p)
   (setf (get a name) p)
 )
 
+;функция для перевода любой структуры данных в строку
 (defun toString (item)
   (string-trim "\"" (write-to-string item)) 
 )
 
-
+;функция для рекурсивного сравнения списков на равенство
 (defun smartEq (lst1 lst2)
   (cond
     ((or (and (eq lst1 '\nil) (null lst2)) 
@@ -19,10 +22,13 @@
   )
 )
 
+;функция для рекурсивного сравнения списков на неравенство
 (defun smartNe (lst1 lst2)
   (not (smartEq lst1 lst2))
 )
 
+;функция превращает свой список-аргумент в строку, являющуюся
+;конкатенацией строковых представлений своих атомов
 (defun concatAll_ (lst) 
   (cond
     ((null lst) "")
@@ -32,10 +38,12 @@
   )
 )
 
+;превращает все свои аргументы в строки и конкатерирует их в одну
 (defun concatAll (&rest lst)
   (concatAll_ lst)
 )
 
+;по заданному атому очищает все свойства атомов в копилке
 (defun cleanSymbol (sym) 
   (let ((symbolsList (SYMBOL-PLIST sym)))
     (cond ((null symbolsList))
@@ -45,6 +53,7 @@
   )
 )
 
+;функция очищает копилку
 (defun cleanAllSymbols ()
   (and (cleanSymbol 's) 
        (cleanSymbol 'v) 
@@ -53,6 +62,7 @@
   )
 )
 
+;отрицание равенства - функция определена для большей читабельности кода
 (defun ne (x y) 
   (not (eq x y))
 )
