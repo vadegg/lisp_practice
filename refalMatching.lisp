@@ -29,11 +29,17 @@
 
         ;refalVarValue doesn't exist here and lst's first element is atom, 
         ;   remember it's value and continue
-        ((and (put (car refalVar) (cadr refalVar) (car lst)) 
-              (Match_ tmp (cdr lst))
-        ))
+        ((putMatchRemove refalVar tmp lst))
       )
   )
+)
+
+(defun putMatchRemove (refalVar tmp lst)
+        (or 
+           (and (put (car refalVar) (cadr refalVar) (car lst)) nil)
+           (Match_ tmp (cdr lst))
+           (and (remprop (car refalVar) (cadr refalVar)) nil)
+        )
 )
 
 (defun takeFirtNElements (n lst)
@@ -92,27 +98,25 @@
   )
 )
 
-(defun elementNumberPrediction (n refalVar tmp lst previousElems)
+(defun elementNumberPrediction (n refalVar tmp lst)
   (let ((firstNElems (takeFirtNElements n lst)))
-    (cond 
-      
-      ((not (= (smartLen firstNElems) n)) (and (cleanage refalVar tmp previousElems) nil))
-      ((get (car refalVar) (cadr refalVar)) (and (Match_ tmp (takeLstTail n lst)) )
-        or (putRefalVar refalVar firstNElems) t) 
-         (cond
-           ((Match_ tmp (takeLstTail n lst)))
-           ((cleanage refalVar tmp previousElems) 
-            (elementNumberPrediction (+ n 1) refalVar tmp lst 
-                                    (cons refalVar previousElems)))
-          )
-      )
+    (cond
+      ((logItCond "elementNuberPrediction n:" n "refalVar:" refalVar "tmp:" tmp "lst:" lst))
+      ((not (= n (smartLen firstNElems))) nil)
+      ((get (car refalVar) (cadr refalVar)) (or (Match_ tmp (takeLstTail n lst)) (elementNumberPrediction (+ n 1) refalVar tmp lst))) 
+      ((or 
+         (and (putRefalVar refalVar firstNElems) nil)
+         (Match_ tmp (takeLstTail n lst))
+         (and (remprop (car refalVar) (cadr refalVar)) nil)
+         (elementNumberPrediction (+ n 1) refalVar tmp lst)
+      ))
     )
   )
 )
 
-(defun eMatchRefalTemplate (refalVar tmp lst) 
+(defun evMatchRefalTemplate (n refalVar tmp lst) 
   (let ((refalVarValue (get (car refalVar) (cadr refalVar))))
-    (cond 
+    (cond
       (refalVarValue (let ((listLen (smartLen refalVarValue)) (firstListLenElems (takeFirtNElements (smartLen refalVarValue) lst)))
                        (cond
                          ((not (= listLen (smartLen firstListLenElems))) nil)
@@ -120,13 +124,17 @@
                        )
                      )
       )
-      ((elementNumberPrediction 0 refalVar tmp lst nil))
+      ((elementNumberPrediction n refalVar tmp lst))
     )
   )
 )
 
 (defun vMatchRefalTemplate (refalVar tmp lst) 
-  (logIt "vMatchRefalTemplate")
+  (evMatchRefalTemplate (1 refalVar tmp lst))
+)
+
+(defun eMatchRefalTemplate (refalVar tmp lst) 
+  (evMatchRefalTemplate (0 refalVar tmp lst))
 )
 
 (defun wMatchRefalTemplate (refalVar tmp lst) 
@@ -143,8 +151,7 @@
 
         ;refalVarValue doesn't exist here
         ;   remember it's value and continue
-        ((and (put (car refalVar) (cadr refalVar) (car lst)) 
-              (Match_ tmp (cdr lst))
+        ((putMatchRemove refalVar tmp lst
         ))
       )
   )
