@@ -130,11 +130,11 @@
 )
 
 (defun vMatchRefalTemplate (refalVar tmp lst) 
-  (evMatchRefalTemplate (1 refalVar tmp lst))
+  (evMatchRefalTemplate 1 refalVar tmp lst)
 )
 
 (defun eMatchRefalTemplate (refalVar tmp lst) 
-  (evMatchRefalTemplate (0 refalVar tmp lst))
+  (evMatchRefalTemplate 0 refalVar tmp lst)
 )
 
 (defun wMatchRefalTemplate (refalVar tmp lst) 
